@@ -1,7 +1,8 @@
-package cc.koosha.pac.selector;
+package cc.koosha.pac.filter;
 
 import cc.koosha.pac.filter.HostnameFilter;
 import cc.koosha.pac.filter.IpRangeFilter;
+import cc.koosha.pac.func.FunctionX;
 import cc.koosha.pac.func.PredicateX;
 
 import java.net.URI;
@@ -14,10 +15,10 @@ import static cc.koosha.pac.filter.HostnameFilter.Mode.ENDS_WITH;
 
 
 /**
- * Default implementation for an white list parser. This will support the most
- * common forms of filters found in white lists. The white list is a comma (or
- * space) separated list of domain names or IP addresses. The following section
- * shows some examples.
+ * Default implementation for an list parser. This will support the most
+ * common forms of filters found in lists. The list is a comma (or space)
+ * separated list of domain names or IP addresses. The following section shows
+ * some examples.
  * <p>
  * .mynet.com - Filters all host names ending with .mynet.com *.mynet.com -
  * Filters all host names ending with .mynet.com www.mynet.* - Filters all host
@@ -39,33 +40,22 @@ import static cc.koosha.pac.filter.HostnameFilter.Mode.ENDS_WITH;
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public final class DefaultWhiteListParser implements WhiteListParser {
+public final class DefaultFilterListParser implements FunctionX<String, List<PredicateX<URI>>> {
 
     private static final Pattern IP_SUB_PATTERN = Pattern.compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
             + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
             + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])/(\\d|([12]\\d|3[0-2]))$");
 
-    /**
-     * Tests if a given string is of in the correct format for an IP4 subnet
-     * mask.
-     *
-     * @param possibleIPAddress to test for valid format.
-     *
-     * @return true if valid else false.
-     */
-    public static boolean isValidIP4Range(final String possibleIPAddress) {
 
-        return IP_SUB_PATTERN.matcher(possibleIPAddress).matches();
+    @Override
+    public List<PredicateX<URI>> apply(final String list) {
+
+        return parse(list);
     }
 
-    public List<PredicateX<URI>> parseWhiteList(final String whiteList) {
+    public static List<PredicateX<URI>> parse(final String list) {
 
-        return parse(whiteList);
-    }
-
-    public static List<PredicateX<URI>> parse(final String whiteList) {
-
-        final String[] token = whiteList.split("[, ]+");
+        final String[] token = list.split("[, ]+");
         final List<PredicateX<URI>> result = new ArrayList<>(token.length);
 
         for (final String each : token) {
@@ -73,7 +63,7 @@ public final class DefaultWhiteListParser implements WhiteListParser {
 
             final PredicateX<URI> filter;
 
-            if (isValidIP4Range(tkn))
+            if (IP_SUB_PATTERN.matcher(tkn).matches())
                 filter = new IpRangeFilter(tkn);
             else if (tkn.endsWith("*"))
                 filter = new HostnameFilter(BEGINS_WITH, tkn.substring(0, tkn.length() - 1));

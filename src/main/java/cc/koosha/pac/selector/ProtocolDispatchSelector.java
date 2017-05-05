@@ -5,9 +5,9 @@ import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.SocketAddress;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -19,9 +19,44 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ProtocolDispatchSelector extends AbstractProxySelector {
 
-    private final Map<String, ProxySelector> selectors = new ConcurrentHashMap<>();
+    private final Map<String, ProxySelector> selectors = new HashMap<>();
 
     private ProxySelector fallbackSelector = new NoProxySelector();
+
+    private ProxySelector _get(final String protocol) {
+
+        if (protocol == null)
+            return this.fallbackSelector;
+
+        synchronized (this.selectors) {
+            final ProxySelector selector = this.selectors.get(protocol);
+            return selector == null ? this.fallbackSelector : selector;
+        }
+    }
+
+    private ProxySelector _remove(final String protocol) {
+
+        synchronized (this.selectors) {
+            return this.selectors.remove(protocol);
+        }
+    }
+
+    private void _add(final String protocol,
+                      final ProxySelector selector) {
+
+        synchronized (this.selectors) {
+            this.selectors.put(protocol, selector);
+        }
+    }
+
+    public ProtocolDispatchSelector(final ProxySelector fallbackSelector) {
+
+        if(fallbackSelector == null)
+            throw new NullPointerException("fallbackSelector");
+
+        this.fallbackSelector = fallbackSelector;
+    }
+
 
     /**
      * Sets a selector responsible for the given protocol.
@@ -29,7 +64,7 @@ public final class ProtocolDispatchSelector extends AbstractProxySelector {
      * @param protocol the name of the protocol.
      * @param selector the selector to use.
      */
-    public void setSelector(final String protocol, final ProxySelector selector) {
+    public void setSelectorForProtocol(final String protocol, final ProxySelector selector) {
 
         if (protocol == null)
             throw new NullPointerException("protocol");
@@ -37,7 +72,7 @@ public final class ProtocolDispatchSelector extends AbstractProxySelector {
         if (selector == null)
             throw new NullPointerException("selector");
 
-        this.selectors.put(protocol, selector);
+        this._add(protocol, selector);
     }
 
     /**
@@ -47,21 +82,9 @@ public final class ProtocolDispatchSelector extends AbstractProxySelector {
      *
      * @return the old selector that is removed.
      */
-    public ProxySelector removeSelector(final String protocol) {
+    public ProxySelector removeSelectorForProtocol(final String protocol) {
 
-        return this.selectors.remove(protocol);
-    }
-
-    /**
-     * Gets the selector installed for the given protocol.
-     *
-     * @param protocol the protocol name.
-     *
-     * @return the selector for that protocol, null if none is currently set.
-     */
-    public ProxySelector getSelector(final String protocol) {
-
-        return this.selectors.get(protocol);
+        return this._remove(protocol);
     }
 
     /**
@@ -85,22 +108,13 @@ public final class ProtocolDispatchSelector extends AbstractProxySelector {
                               final SocketAddress sa,
                               final IOException ioe) {
 
-        final String protocol = uri.getScheme();
-
-        if (protocol != null && this.selectors.get(protocol) != null)
-            this.selectors.get(protocol).connectFailed(uri, sa, ioe);
-        else
-            this.fallbackSelector.connectFailed(uri, sa, ioe);
+        _get(uri.getScheme()).connectFailed(uri, sa, ioe);
     }
 
     @Override
     public List<Proxy> select(final URI uri) {
 
-        final String protocol = uri.getScheme();
-
-        return protocol != null && this.selectors.get(protocol) != null
-               ? this.selectors.get(protocol).select(uri)
-               : this.fallbackSelector.select(uri);
+        return _get(uri.getScheme()).select(uri);
     }
 
     /**
@@ -110,7 +124,9 @@ public final class ProtocolDispatchSelector extends AbstractProxySelector {
      */
     public int size() {
 
-        return this.selectors.size();
+        synchronized (this.selectors) {
+            return this.selectors.size();
+        }
     }
 
 }

@@ -1,7 +1,5 @@
 package cc.koosha.pac.pac;
 
-import cc.koosha.pac.NetRequest;
-
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -18,7 +16,7 @@ import java.util.*;
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public final class PacScriptMethods implements ScriptMethods {
+public final class DefaultPacScriptMethods implements ScriptMethods {
 
     private static final String VERSION = "1.0";
 
@@ -51,7 +49,11 @@ public final class PacScriptMethods implements ScriptMethods {
     };
     private final NetRequest netRequest;
 
-    public PacScriptMethods(final NetRequest netRequest) {
+    // Used by unit tests
+    @SuppressWarnings("unused")
+    private Calendar currentTime;
+
+    public DefaultPacScriptMethods(final NetRequest netRequest) {
 
         this.netRequest = netRequest;
     }
@@ -84,9 +86,9 @@ public final class PacScriptMethods implements ScriptMethods {
         if (host == null || host.length() == 0)
             return false;
 
-        final long lHost = parseIpAddressToLong(host);
+        final long lHost    = parseIpAddressToLong(host);
         final long lPattern = parseIpAddressToLong(pattern);
-        final long lMask = parseIpAddressToLong(mask);
+        final long lMask    = parseIpAddressToLong(mask);
 
         return (lHost & lMask) == lPattern;
     }
@@ -103,7 +105,7 @@ public final class PacScriptMethods implements ScriptMethods {
 
     public int dnsDomainLevels(final String host) {
 
-        int count = 0;
+        int count    = 0;
         int startPos = 0;
 
         while ((startPos = host.indexOf(".", startPos + 1)) > -1)
@@ -115,11 +117,11 @@ public final class PacScriptMethods implements ScriptMethods {
     public boolean shExpMatch(final String str, final String shexp) {
 
         final StringTokenizer tokenizer = new StringTokenizer(shexp, "*");
-        int startPos = 0;
+        int                   startPos  = 0;
 
         while (tokenizer.hasMoreTokens()) {
             final String token = tokenizer.nextToken();
-            final int temp = str.indexOf(token, startPos);
+            final int    temp  = str.indexOf(token, startPos);
 
             // Must start with first token
             if (startPos == 0 && !shexp.startsWith("*") && temp != 0)
@@ -144,12 +146,16 @@ public final class PacScriptMethods implements ScriptMethods {
                                 final String wd2,
                                 final String gmt) {
 
-        final boolean useGmt = GMT.equalsIgnoreCase(wd2) || GMT.equalsIgnoreCase(gmt);
-        final Calendar cal = getCurrentTime(useGmt);
+        final boolean  useGmt = GMT.equalsIgnoreCase(wd2) || GMT.equalsIgnoreCase(gmt);
+        final Calendar cal    = getCurrentTime(useGmt);
 
         final int currentDay = cal.get(Calendar.DAY_OF_WEEK) - 1;
-        final int from = DAYS.indexOf(wd1 == null ? null : wd1.toUpperCase());
-        int to = DAYS.indexOf(wd2 == null ? null : wd2.toUpperCase());
+        final int from = DAYS.indexOf(wd1 == null
+                                      ? null
+                                      : wd1.toUpperCase());
+        int to = DAYS.indexOf(wd2 == null
+                              ? null
+                              : wd2.toUpperCase());
         if (to == -1)
             to = from;
 
@@ -177,9 +183,9 @@ public final class PacScriptMethods implements ScriptMethods {
         parseDateParam(params, gmt);
 
         // Get current date
-        final boolean useGmt = params.get("gmt") != null;
-        final Calendar cal = getCurrentTime(useGmt);
-        final Date current = cal.getTime();
+        final boolean  useGmt  = params.get("gmt") != null;
+        final Calendar cal     = getCurrentTime(useGmt);
+        final Date     current = cal.getTime();
 
         // Build the "from" date
         if (params.get("day1") != null)
@@ -217,6 +223,7 @@ public final class PacScriptMethods implements ScriptMethods {
         return current.compareTo(from) >= 0 && current.compareTo(to) <= 0;
     }
 
+    // TODO is this method correct? the instance of sequence.
     public boolean timeRange(final Object hour1,
                              final Object min1,
                              final Object sec1,
@@ -234,7 +241,7 @@ public final class PacScriptMethods implements ScriptMethods {
         cal.set(Calendar.MILLISECOND, 0);
         final Date current = cal.getTime();
         final Date from;
-        Date to;
+        Date       to;
 
         if (sec2 instanceof Number) {
             cal.set(Calendar.HOUR_OF_DAY, ((Number) hour1).intValue());
@@ -258,13 +265,24 @@ public final class PacScriptMethods implements ScriptMethods {
             cal.set(Calendar.SECOND, 59);
             to = cal.getTime();
         }
-        else { // if (min1 instanceof Number) {
+        else if (min1 instanceof Number) {
             cal.set(Calendar.HOUR_OF_DAY, ((Number) hour1).intValue());
             cal.set(Calendar.MINUTE, 0);
             cal.set(Calendar.SECOND, 0);
             from = cal.getTime();
 
             cal.set(Calendar.HOUR_OF_DAY, ((Number) min1).intValue());
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            to = cal.getTime();
+        }
+        else {
+            cal.set(Calendar.HOUR_OF_DAY, ((Number) hour1).intValue());
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            from = cal.getTime();
+
+            cal.set(Calendar.HOUR_OF_DAY, 0);
             cal.set(Calendar.MINUTE, 59);
             cal.set(Calendar.SECOND, 59);
             to = cal.getTime();
@@ -295,7 +313,7 @@ public final class PacScriptMethods implements ScriptMethods {
             return false;
 
         final String cidrRange = cidrParts[0];
-        final int cidrBits = Integer.parseInt(cidrParts[1]);
+        final int    cidrBits  = Integer.parseInt(cidrParts[1]);
 
         final byte[] addressBytes = netRequest.tryGetAddress(ipOrHost);
         if (addressBytes == null)
@@ -311,8 +329,8 @@ public final class PacScriptMethods implements ScriptMethods {
                                 : HIGH_128_INT.shiftLeft(128 - cidrBits);
 
 
-        final BigInteger range = new BigInteger(rangeBytes);
-        final BigInteger lowIP = range.and(mask);
+        final BigInteger range  = new BigInteger(rangeBytes);
+        final BigInteger lowIP  = range.and(mask);
         final BigInteger highIP = lowIP.add(mask.not());
 
         return lowIP.compareTo(ip) <= 0 && highIP.compareTo(ip) >= 0;
@@ -350,7 +368,7 @@ public final class PacScriptMethods implements ScriptMethods {
 
         for (final String ip : ipAddressToken) {
             final String cleanIP = ip.trim();
-            final byte[] addr = netRequest.tryGetAddress(cleanIP);
+            final byte[] addr    = netRequest.tryGetAddress(cleanIP);
 
             if (addr == null)
                 return "";
@@ -382,7 +400,7 @@ public final class PacScriptMethods implements ScriptMethods {
         final String[] parts = address.split("\\.");
 
         long result = 0;
-        long shift = 24;
+        long shift  = 24;
 
         for (final String part : parts) {
             result |= (Long.parseLong(part) << shift);
@@ -428,6 +446,10 @@ public final class PacScriptMethods implements ScriptMethods {
     }
 
     private Calendar getCurrentTime(final boolean useGmt) {
+
+        // Used by unit tests
+        if (this.currentTime != null)
+            return (Calendar) this.currentTime.clone();
 
         final TimeZone zone = useGmt
                               ? TimeZone.getTimeZone(GMT)

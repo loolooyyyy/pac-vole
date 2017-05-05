@@ -1,4 +1,4 @@
-package cc.koosha.pac;
+package cc.koosha.pac.pac;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -8,9 +8,6 @@ import java.util.Enumeration;
 
 
 public final class DefaultNetRequest implements NetRequest {
-
-    protected static final String OVERRIDE_LOCAL_IP
-            = "com.btr.proxy.pac.overrideLocalIP";
 
     @Override
     public InetAddress tryGet(final String host) {

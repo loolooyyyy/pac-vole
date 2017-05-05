@@ -1,5 +1,6 @@
 package cc.koosha.pac.selector;
 
+import cc.koosha.pac.filter.DefaultFilterListParser;
 import cc.koosha.pac.func.PredicateX;
 
 import java.io.IOException;
@@ -48,7 +49,7 @@ public final class BypassListProxySelector extends AbstractProxySelector {
     public BypassListProxySelector(final String whiteList,
                                    final ProxySelector proxySelector) {
 
-        this(DefaultWhiteListParser.parse(whiteList), proxySelector);
+        this(DefaultFilterListParser.parse(whiteList), proxySelector);
     }
 
     @Override

@@ -1,14 +1,17 @@
 package cc.koosha.pac.selector;
 
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URI;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.*;
+import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 
 
 public class ProtocolDispatchSelectorTest {
@@ -26,13 +29,28 @@ public class ProtocolDispatchSelectorTest {
 
     private ProtocolDispatchSelector ps;
 
-    @BeforeClass
+    private static ProtocolDispatchSelector getPs() {
+
+        return new ProtocolDispatchSelector(new ProxySelector() {
+            @Override
+            public List<Proxy> select(final URI uri) {
+                return null;
+            }
+
+            @Override
+            public void connectFailed(final URI uri, final SocketAddress sa, final IOException ioe) {
+
+            }
+        });
+    }
+
+    @BeforeMethod
     public void setup() {
 
-        this.ps = new ProtocolDispatchSelector();
-        this.ps.setSelector("http", new FixedProxySelector(HTTP_TEST_PROXY));
-        this.ps.setSelector("https", new FixedProxySelector(HTTPS_TEST_PROXY));
-        this.ps.setSelector("ftp", new FixedProxySelector(FTP_TEST_PROXY));
+        this.ps = getPs();
+        this.ps.setSelectorForProtocol("http", new FixedProxySelector(HTTP_TEST_PROXY));
+        this.ps.setSelectorForProtocol("https", new FixedProxySelector(HTTPS_TEST_PROXY));
+        this.ps.setSelectorForProtocol("ftp", new FixedProxySelector(FTP_TEST_PROXY));
     }
 
     @Test
@@ -54,22 +72,28 @@ public class ProtocolDispatchSelectorTest {
     }
 
     @Test
-    public void testRemove() {
+    public void testRemove() throws NoSuchMethodException,
+                                    InvocationTargetException,
+                                    IllegalAccessException {
 
-        final ProtocolDispatchSelector px       = new ProtocolDispatchSelector();
+        final ProtocolDispatchSelector px       = getPs();
         final FixedProxySelector       selector = new FixedProxySelector(HTTP_TEST_PROXY);
 
-        px.setSelector("http", selector);
-        assertEquals(px.getSelector("http"), selector);
+        final Method get =
+                px.getClass().getDeclaredMethod("_get", String.class);
+        get.setAccessible(true);
 
-        px.removeSelector("http");
-        assertNull(px.getSelector("http"));
+        px.setSelectorForProtocol("http", selector);
+
+        assertSame(get.invoke(px, "http"), selector);
+        assertSame(px.removeSelectorForProtocol("http"), selector);
+        assertEquals(px.size(), 0);
     }
 
     @Test
     public void testFallback() {
 
-        final ProtocolDispatchSelector px       = new ProtocolDispatchSelector();
+        final ProtocolDispatchSelector px       = getPs();
         final FixedProxySelector       selector = new FixedProxySelector(HTTP_TEST_PROXY);
         px.setFallbackSelector(selector);
 

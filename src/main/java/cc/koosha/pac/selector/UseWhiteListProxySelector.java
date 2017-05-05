@@ -1,5 +1,6 @@
 package cc.koosha.pac.selector;
 
+import cc.koosha.pac.filter.DefaultFilterListParser;
 import cc.koosha.pac.func.PredicateX;
 
 import java.io.IOException;
@@ -21,8 +22,8 @@ import java.util.List;
  */
 public final class UseWhiteListProxySelector extends AbstractProxySelector {
 
-    private final ProxySelector delegate;
-    private final List<PredicateX<URI>> whiteListFilter;
+    private final ProxySelector         delegate;
+    private final List<PredicateX<URI>> filters;
 
     /**
      * @param whiteList     the whitelist to use.
@@ -36,7 +37,7 @@ public final class UseWhiteListProxySelector extends AbstractProxySelector {
             throw new NullPointerException("proxySelector");
 
         this.delegate = proxySelector;
-        this.whiteListFilter = DefaultWhiteListParser.parse(whiteList);
+        this.filters = DefaultFilterListParser.parse(whiteList);
     }
 
     @Override
@@ -51,7 +52,7 @@ public final class UseWhiteListProxySelector extends AbstractProxySelector {
     public List<Proxy> select(final URI uri) {
 
         // If in white list, use proxy selector.
-        for (final PredicateX<URI> filter : this.whiteListFilter)
+        for (final PredicateX<URI> filter : this.filters)
             if (filter.test(uri))
                 return this.delegate.select(uri);
 

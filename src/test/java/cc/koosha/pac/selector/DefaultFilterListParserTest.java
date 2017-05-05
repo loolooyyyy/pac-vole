@@ -2,7 +2,7 @@ package cc.koosha.pac.selector;
 
 
 import cc.koosha.pac.func.PredicateX;
-import cc.koosha.pac.selector.DefaultWhiteListParser;
+import cc.koosha.pac.filter.DefaultFilterListParser;
 import org.testng.annotations.Test;
 
 import java.net.URI;
@@ -11,11 +11,11 @@ import java.util.List;
 import static org.testng.Assert.*;
 
 
-public class DefaultWhiteListParserTest {
+public class DefaultFilterListParserTest {
 
     private static List<PredicateX<URI>> parse(final String whitelist) {
 
-        return DefaultWhiteListParser.parse(whitelist);
+        return DefaultFilterListParser.parse(whitelist);
     }
 
     @Test

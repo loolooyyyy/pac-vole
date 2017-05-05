@@ -1,7 +1,5 @@
 package cc.koosha.pac.pac;
 
-import cc.koosha.pac.DefaultNetRequest;
-import cc.koosha.pac.NetRequest;
 import cc.koosha.pac.ProxyEvaluationException;
 import cc.koosha.pac.func.StringProvider;
 
@@ -44,7 +42,7 @@ public final class JavaxPacScriptParser implements PacScriptParser {
         this.scriptSource = scriptSource;
         this.engine = engine;
 
-        engine.put(SCRIPT_METHODS_OBJECT, new PacScriptMethods(netRequest));
+        engine.put(SCRIPT_METHODS_OBJECT, new DefaultPacScriptMethods(netRequest));
 
         for (final Method method : ScriptMethods.class.getMethods()) {
             final String name = method.getName();
