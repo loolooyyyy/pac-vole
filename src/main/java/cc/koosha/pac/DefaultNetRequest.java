@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 
-public class DefaultNetRequest implements NetRequest {
+public final class DefaultNetRequest implements NetRequest {
 
     protected static final String OVERRIDE_LOCAL_IP
             = "com.btr.proxy.pac.overrideLocalIP";

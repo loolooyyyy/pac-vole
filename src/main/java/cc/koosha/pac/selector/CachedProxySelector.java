@@ -17,7 +17,7 @@ import java.util.Map.Entry;
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public final class CachedProxySelector extends ProxySelector {
+public final class CachedProxySelector extends AbstractProxySelector {
 
     /**
      * Define the available scopes of the cache key generation

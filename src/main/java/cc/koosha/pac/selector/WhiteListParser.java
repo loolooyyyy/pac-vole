@@ -1,4 +1,4 @@
-package cc.koosha.pac.whitelist;
+package cc.koosha.pac.selector;
 
 import cc.koosha.pac.func.PredicateX;
 

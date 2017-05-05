@@ -1,8 +1,8 @@
 package cc.koosha.pac.selector;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.ProxySelector;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.util.Collections;
@@ -16,7 +16,7 @@ import java.util.List;
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public class FixedProxySelector extends ProxySelector {
+public class FixedProxySelector extends AbstractProxySelector {
 
     private final List<Proxy> proxyList;
 
@@ -26,6 +26,13 @@ public class FixedProxySelector extends ProxySelector {
     public FixedProxySelector(final Proxy proxy) {
 
         this.proxyList = Collections.singletonList(proxy);
+    }
+
+    public FixedProxySelector(final Proxy.Type proxyType,
+                              final String host,
+                              final int port) {
+
+        this(new Proxy(proxyType, InetSocketAddress.createUnresolved(host, port)));
     }
 
     @Override

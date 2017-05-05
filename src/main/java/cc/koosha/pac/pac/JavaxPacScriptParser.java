@@ -101,4 +101,11 @@ public final class JavaxPacScriptParser implements PacScriptParser {
         }
     }
 
+    public static boolean isScriptValid(final String script) {
+
+        return script != null &&
+                !script.trim().isEmpty() &&
+                script.contains("FindProxyForURL");
+    }
+
 }

@@ -23,4 +23,5 @@ public interface PacScriptParser {
      */
     String evaluate(String url, String host) throws ProxyEvaluationException;
 
+
 }

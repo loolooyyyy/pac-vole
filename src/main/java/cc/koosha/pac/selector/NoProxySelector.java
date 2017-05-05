@@ -1,10 +1,7 @@
 package cc.koosha.pac.selector;
 
-import cc.koosha.pac.ProxyUtil;
-
 import java.io.IOException;
 import java.net.Proxy;
-import java.net.ProxySelector;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.util.List;
@@ -16,7 +13,7 @@ import java.util.List;
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public final class NoProxySelector extends ProxySelector {
+public final class NoProxySelector extends AbstractProxySelector {
 
     public NoProxySelector() {
     }
@@ -32,7 +29,7 @@ public final class NoProxySelector extends ProxySelector {
     @Override
     public List<Proxy> select(final URI uri) {
 
-        return ProxyUtil.noProxyList();
+        return noProxyList();
     }
 
 }

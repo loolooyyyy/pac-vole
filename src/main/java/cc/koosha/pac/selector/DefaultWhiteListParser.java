@@ -1,11 +1,16 @@
-package cc.koosha.pac.whitelist;
+package cc.koosha.pac.selector;
 
+import cc.koosha.pac.filter.HostnameFilter;
+import cc.koosha.pac.filter.IpRangeFilter;
 import cc.koosha.pac.func.PredicateX;
-import cc.koosha.pac.ProxyUtil;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+
+import static cc.koosha.pac.filter.HostnameFilter.Mode.BEGINS_WITH;
+import static cc.koosha.pac.filter.HostnameFilter.Mode.ENDS_WITH;
 
 
 /**
@@ -36,6 +41,23 @@ import java.util.List;
  */
 public final class DefaultWhiteListParser implements WhiteListParser {
 
+    private static final Pattern IP_SUB_PATTERN = Pattern.compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+            + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+            + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])/(\\d|([12]\\d|3[0-2]))$");
+
+    /**
+     * Tests if a given string is of in the correct format for an IP4 subnet
+     * mask.
+     *
+     * @param possibleIPAddress to test for valid format.
+     *
+     * @return true if valid else false.
+     */
+    public static boolean isValidIP4Range(final String possibleIPAddress) {
+
+        return IP_SUB_PATTERN.matcher(possibleIPAddress).matches();
+    }
+
     public List<PredicateX<URI>> parseWhiteList(final String whiteList) {
 
         return parse(whiteList);
@@ -46,17 +68,21 @@ public final class DefaultWhiteListParser implements WhiteListParser {
         final String[] token = whiteList.split("[, ]+");
         final List<PredicateX<URI>> result = new ArrayList<>(token.length);
 
-        for (final String aToken : token) {
-            final String tkn = aToken.trim();
-            if (ProxyUtil.isValidIP4Range(tkn))
-                result.add(new IpRangeFilter(tkn));
+        for (final String each : token) {
+            final String tkn = each.trim();
+
+            final PredicateX<URI> filter;
+
+            if (isValidIP4Range(tkn))
+                filter = new IpRangeFilter(tkn);
             else if (tkn.endsWith("*"))
-                result.add(new HostnameFilter(HostnameFilter.Mode.BEGINS_WITH, tkn.substring(0, tkn
-                        .length() - 1)));
-            else if (tkn.trim().startsWith("*"))
-                result.add(new HostnameFilter(HostnameFilter.Mode.ENDS_WITH, tkn.substring(1)));
+                filter = new HostnameFilter(BEGINS_WITH, tkn.substring(0, tkn.length() - 1));
+            else if (tkn.startsWith("*"))
+                filter = new HostnameFilter(ENDS_WITH, tkn.substring(1));
             else
-                result.add(new HostnameFilter(HostnameFilter.Mode.ENDS_WITH, tkn));
+                filter = new HostnameFilter(ENDS_WITH, tkn);
+
+            result.add(filter);
         }
 
         return result;

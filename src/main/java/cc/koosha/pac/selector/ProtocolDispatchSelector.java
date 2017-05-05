@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public final class ProtocolDispatchSelector extends ProxySelector {
+public final class ProtocolDispatchSelector extends AbstractProxySelector {
 
     private final Map<String, ProxySelector> selectors = new ConcurrentHashMap<>();
 

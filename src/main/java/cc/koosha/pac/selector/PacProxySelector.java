@@ -2,12 +2,14 @@ package cc.koosha.pac.selector;
 
 import cc.koosha.pac.ProxyEvaluationException;
 import cc.koosha.pac.func.StringProvider;
-import cc.koosha.pac.ProxyUtil;
 import cc.koosha.pac.pac.JavaxPacScriptParser;
 import cc.koosha.pac.pac.PacScriptParser;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.SocketAddress;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +20,7 @@ import java.util.List;
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  ****************************************************************************/
-public final class PacProxySelector extends ProxySelector {
+public final class PacProxySelector extends AbstractProxySelector {
 
     public static final int DEFAULT_PROXY_PORT = 80;
 
@@ -75,7 +77,7 @@ public final class PacProxySelector extends ProxySelector {
         // Fix for Java 1.6.16+ where we get a infinite loop because
         // URL.connect(Proxy.NO_PROXY) does not work as expected.
         if (!enabled)
-            return ProxyUtil.noProxyList();
+            return noProxyList();
 
         try {
             final String parseResult = this.pacScriptParser.evaluate(
@@ -93,7 +95,7 @@ public final class PacProxySelector extends ProxySelector {
             return proxies;
         }
         catch (final ProxyEvaluationException e) {
-            return ProxyUtil.noProxyList();
+            return noProxyList();
         }
     }
 
