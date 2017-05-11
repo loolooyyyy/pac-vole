@@ -5,6 +5,8 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -40,6 +42,13 @@ public final class DefaultPacScriptMethods implements ScriptMethods {
                     "MAY", "JUN", "JUL", "AUG",
                     "SEP", "OCT", "NOV", "DEC"));
 
+    private static final Pattern pattern = Pattern.compile(
+            "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                    "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                    "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                    "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$"
+    );
+
     private final Comparator<byte[]> c = new Comparator<byte[]>() {
         public int compare(final byte[] b1, final byte[] b2) {
             return b1.length != b2.length
@@ -49,7 +58,7 @@ public final class DefaultPacScriptMethods implements ScriptMethods {
     };
     private final NetRequest netRequest;
 
-    // Used by unit tests
+    // !!!Used by unit tests!!!
     @SuppressWarnings("unused")
     private Calendar currentTime;
 
@@ -58,51 +67,59 @@ public final class DefaultPacScriptMethods implements ScriptMethods {
         this.netRequest = netRequest;
     }
 
+    @Override
     public boolean isPlainHostName(final String host) {
 
         return !host.contains(".");
     }
 
+    @Override
     public boolean dnsDomainIs(final String host, final String domain) {
 
         return host.endsWith(domain);
     }
 
+    @Override
     public boolean localHostOrDomainIs(final String host, final String domain) {
 
         return domain.startsWith(host);
     }
 
+    @Override
     public boolean isResolvable(final String host) {
 
         return netRequest.tryGet(host) != null;
     }
 
-    public boolean isInNet(String host,
+    @Override
+    public boolean isInNet(final String host,
                            final String pattern,
                            final String mask) {
 
-        host = dnsResolve(host);
-        if (host == null || host.length() == 0)
+        final String dnsResolve = dnsResolve(host);
+        if (dnsResolve == null || dnsResolve.length() == 0)
             return false;
 
-        final long lHost    = parseIpAddressToLong(host);
+        final long lHost    = parseIpAddressToLong(dnsResolve);
         final long lPattern = parseIpAddressToLong(pattern);
         final long lMask    = parseIpAddressToLong(mask);
 
         return (lHost & lMask) == lPattern;
     }
 
+    @Override
     public String dnsResolve(final String host) {
 
         return netRequest.dnsResolve(host, "");
     }
 
+    @Override
     public String myIpAddress() {
 
         return netRequest.getLocalAddressOfType(Inet4Address.class);
     }
 
+    @Override
     public int dnsDomainLevels(final String host) {
 
         int count    = 0;
@@ -114,34 +131,19 @@ public final class DefaultPacScriptMethods implements ScriptMethods {
         return count;
     }
 
-    public boolean shExpMatch(final String str, final String shexp) {
+    @Override
+    public boolean shExpMatch(final String str, final String pattern) {
 
-        final StringTokenizer tokenizer = new StringTokenizer(shexp, "*");
-        int                   startPos  = 0;
+        final String escaped = pattern.replace(".", "\\.")
+                                      .replace("*", ".*")
+                                      .replace('?', '.');
 
-        while (tokenizer.hasMoreTokens()) {
-            final String token = tokenizer.nextToken();
-            final int    temp  = str.indexOf(token, startPos);
-
-            // Must start with first token
-            if (startPos == 0 && !shexp.startsWith("*") && temp != 0)
-                return false;
-
-            // Last one ends with last token
-            if (!tokenizer.hasMoreTokens() && !shexp.endsWith("*") && !str.endsWith(token))
-                return false;
-
-            if (temp == -1) {
-                return false;
-            }
-            else {
-                startPos = temp + token.length();
-            }
-        }
-
-        return true;
+        final Pattern compile = Pattern.compile(escaped, Pattern.CASE_INSENSITIVE);
+        final Matcher matcher = compile.matcher(str);
+        return matcher.matches();
     }
 
+    @Override
     public boolean weekdayRange(final String wd1,
                                 final String wd2,
                                 final String gmt) {
@@ -164,6 +166,7 @@ public final class DefaultPacScriptMethods implements ScriptMethods {
                : currentDay >= from && currentDay <= to;
     }
 
+    @Override
     public boolean dateRange(final Object day1,
                              final Object month1,
                              final Object year1,
@@ -224,6 +227,7 @@ public final class DefaultPacScriptMethods implements ScriptMethods {
     }
 
     // TODO is this method correct? the instance of sequence.
+    @Override
     public boolean timeRange(final Object hour1,
                              final Object min1,
                              final Object sec1,
@@ -297,11 +301,13 @@ public final class DefaultPacScriptMethods implements ScriptMethods {
         return current.compareTo(from) >= 0 && current.compareTo(to) <= 0;
     }
 
+    @Override
     public boolean isResolvableEx(final String host) {
 
         return isResolvable(host);
     }
 
+    @Override
     public boolean isInNetEx(final String ipOrHost, final String cidr) {
 
         if (ipOrHost == null || cidr == null || ipOrHost.isEmpty() || cidr.isEmpty())
@@ -336,6 +342,7 @@ public final class DefaultPacScriptMethods implements ScriptMethods {
         return lowIP.compareTo(ip) <= 0 && highIP.compareTo(ip) >= 0;
     }
 
+    @Override
     public String dnsResolveEx(final String host) {
 
         final StringBuilder result = new StringBuilder();
@@ -352,11 +359,13 @@ public final class DefaultPacScriptMethods implements ScriptMethods {
         return result.toString();
     }
 
+    @Override
     public String myIpAddressEx() {
 
         return netRequest.getLocalAddressOfType(Inet6Address.class);
     }
 
+    @Override
     public String sortIpAddressList(final String ipAddressList) {
 
         if (ipAddressList == null || ipAddressList.trim().isEmpty())
@@ -389,11 +398,18 @@ public final class DefaultPacScriptMethods implements ScriptMethods {
         return result.toString();
     }
 
+    @Override
     public String getClientVersion() {
 
         return VERSION;
     }
 
+    @Override
+    public boolean isIpAddress(final String host) {
+
+        final Matcher matcher = pattern.matcher(host);
+        return matcher.matches();
+    }
 
     private long parseIpAddressToLong(final String address) {
 

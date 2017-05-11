@@ -1,9 +1,7 @@
 package cc.koosha.pac.selector;
 
-import java.io.IOException;
 import java.net.Proxy;
 import java.net.ProxySelector;
-import java.net.SocketAddress;
 import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
@@ -14,10 +12,11 @@ import java.util.Map.Entry;
  * ProxySelector. You can specify a maximum cache size and a "time to live" for
  * positive resolves.
  *
+ * @author Koosha Hosseiny, Copyright 2017
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public final class CachedProxySelector extends AbstractProxySelector {
+public final class CachedProxySelector extends DelegatingProxySelector {
 
     /**
      * Define the available scopes of the cache key generation
@@ -41,13 +40,10 @@ public final class CachedProxySelector extends AbstractProxySelector {
         CACHE_SCOPE_URL
     }
 
-
-    private final ProxySelector delegate;
-
     private final HashMap<String, CacheEntry> cache = new HashMap<>();
-    private final int bulkFree;
-    private final int maxSize;
-    private final long ttl;
+    private final int        bulkFree;
+    private final int        maxSize;
+    private final long       ttl;
     private final CacheScope cacheScope;
 
 
@@ -63,12 +59,11 @@ public final class CachedProxySelector extends AbstractProxySelector {
         }
     };
 
-
     private final static class CacheEntry {
 
         final List<Proxy> result;
-        final long expireAt;
-        final String key;
+        final long        expireAt;
+        final String      key;
 
         CacheEntry(final List<Proxy> r,
                    final long expireAt,
@@ -92,33 +87,27 @@ public final class CachedProxySelector extends AbstractProxySelector {
      * @param delegate   the delegate to use.
      * @param cacheScope the desired cache scope.
      */
-    public CachedProxySelector(final int maxSize,
-                               final long ttl,
-                               final ProxySelector delegate,
-                               final CacheScope cacheScope) {
+    public CachedProxySelector(final ProxySelector delegate,
+                               final CacheScope cacheScope,
+                               final int maxSize,
+                               final long ttl) {
+
+        super(delegate);
 
         if (maxSize < 1)
             throw new IllegalStateException("maxSize must be >= 1: " + maxSize);
+
         if (ttl < 1)
             throw new IllegalStateException("ttl must be >= 1: " + ttl);
 
         this.maxSize = maxSize;
-        this.delegate = delegate;
         this.ttl = ttl;
         this.cacheScope = cacheScope;
         this.bulkFree = maxSize <= 10 ? 1 : maxSize / 10;
     }
 
     @Override
-    public void connectFailed(final URI uri,
-                              final SocketAddress sa,
-                              final IOException ioe) {
-
-        this.delegate.connectFailed(uri, sa, ioe);
-    }
-
-    @Override
-    public List<Proxy> select(final URI uri) {
+    protected List<Proxy> __select(final URI uri) {
 
         final String cacheKey;
 
@@ -147,7 +136,7 @@ public final class CachedProxySelector extends AbstractProxySelector {
 
         if (entry == null || entry.isExpired())
             entry = new CacheEntry(
-                    this.delegate.select(uri),
+                    this.getDelegate().select(uri),
                     System.nanoTime() + this.ttl * 1000 * 1000,
                     cacheKey
             );

@@ -17,17 +17,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * This will remove proxies from a list of proxies and implement an automatic
  * retry mechanism.
  *
+ * @author Koosha Hosseiny, Copyright 2017
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public final class ListFallbackProxySelector extends AbstractProxySelector {
+public final class ListFallbackProxySelector extends DelegatingProxySelector {
 
     // Retry a unresponsive proxy after 10 minutes per default.
     private static final int DEFAULT_RETRY_DELAY = 1000 * 60 * 10;
 
-    private final ProxySelector delegate;
     private final ConcurrentHashMap<SocketAddress, Long> failedDelayCache;
-    private final long retryAfterMs;
+    private final long                                   retryAfterMs;
 
     /**
      * Constructor
@@ -36,18 +36,19 @@ public final class ListFallbackProxySelector extends AbstractProxySelector {
      */
     public ListFallbackProxySelector(final ProxySelector delegate) {
 
-        this(DEFAULT_RETRY_DELAY, delegate);
+        this(delegate, DEFAULT_RETRY_DELAY);
     }
 
     /**
      * @param retryAfterMs the "retry delay" as amount of milliseconds.
      * @param delegate     the delegate to use.
      */
-    public ListFallbackProxySelector(final long retryAfterMs,
-                                     final ProxySelector delegate) {
+    public ListFallbackProxySelector(final ProxySelector delegate,
+                                     final long retryAfterMs) {
+
+        super(delegate);
 
         this.failedDelayCache = new ConcurrentHashMap<>();
-        this.delegate = delegate;
         this.retryAfterMs = retryAfterMs;
     }
 
@@ -60,10 +61,10 @@ public final class ListFallbackProxySelector extends AbstractProxySelector {
     }
 
     @Override
-    public List<Proxy> select(final URI uri) {
+    protected List<Proxy> __select(final URI uri) {
 
         cleanupCache();
-        final List<Proxy> proxyList = this.delegate.select(uri);
+        final List<Proxy> proxyList = this.getDelegate().select(uri);
         return filterUnresponsiveProxiesFromList(proxyList);
     }
 
@@ -76,8 +77,8 @@ public final class ListFallbackProxySelector extends AbstractProxySelector {
                 this.failedDelayCache.entrySet().iterator();
 
         while (it.hasNext()) {
-            final Entry<SocketAddress, Long> e = it.next();
-            final Long lastFailTime = e.getValue();
+            final Entry<SocketAddress, Long> e            = it.next();
+            final Long                       lastFailTime = e.getValue();
             if (retryDelayHasPassedBy(lastFailTime))
                 it.remove();
         }
@@ -96,23 +97,12 @@ public final class ListFallbackProxySelector extends AbstractProxySelector {
             return proxyList;
 
         final List<Proxy> result = new ArrayList<>(proxyList.size());
+
         for (final Proxy proxy : proxyList)
             if (isDirect(proxy) || isNotUnresponsive(proxy))
                 result.add(proxy);
 
         return result;
-    }
-
-    /**
-     * Checks if the given proxy is representing a direct connection.
-     *
-     * @param proxy to inspect.
-     *
-     * @return true if it is direct else false.
-     */
-    private boolean isDirect(final Proxy proxy) {
-
-        return Proxy.NO_PROXY.equals(proxy);
     }
 
     /**

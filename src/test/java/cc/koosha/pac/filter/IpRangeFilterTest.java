@@ -1,6 +1,5 @@
 package cc.koosha.pac.filter;
 
-import cc.koosha.pac.filter.IpRangeFilter;
 import org.testng.annotations.Test;
 
 import java.net.URI;

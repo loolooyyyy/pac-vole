@@ -7,6 +7,9 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 
+/**
+ * @author Koosha Hosseiny, Copyright 2017
+ */
 public final class DefaultNetRequest implements NetRequest {
 
     @Override
@@ -54,23 +57,11 @@ public final class DefaultNetRequest implements NetRequest {
     }
 
     @Override
-    public boolean hasOverrideLocalIp() {
-
-        final String overrideIP = System.getProperty(OVERRIDE_LOCAL_IP);
-        return overrideIP != null && !overrideIP.trim().isEmpty();
-    }
-
-    @Override
-    public String getOverrideLocalIp() {
-
-        return System.getProperty(OVERRIDE_LOCAL_IP);
-    }
-
-    @Override
     public String getLocalAddressOfType(final Class<? extends InetAddress> cl) {
 
-        if (this.hasOverrideLocalIp())
-            return this.getOverrideLocalIp();
+        final String overrideIP = System.getProperty(OVERRIDE_LOCAL_IP);
+        if (overrideIP != null && !overrideIP.trim().isEmpty())
+            return System.getProperty(OVERRIDE_LOCAL_IP);
 
         final Enumeration<NetworkInterface> interfaces;
 

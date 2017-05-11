@@ -1,9 +1,7 @@
 package cc.koosha.pac.selector;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.SocketAddress;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -13,10 +11,11 @@ import java.util.List;
  * This proxy selector is configured with a fixed proxy. This proxy will be
  * returned for all URIs passed to the select method.
  *
+ * @author Koosha Hosseiny, Copyright 2017
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public class FixedProxySelector extends AbstractProxySelector {
+public class FixedProxySelector extends EProxySelector {
 
     private final List<Proxy> proxyList;
 
@@ -36,14 +35,7 @@ public class FixedProxySelector extends AbstractProxySelector {
     }
 
     @Override
-    public final void connectFailed(final URI uri,
-                                    final SocketAddress sa,
-                                    final IOException ioe) {
-        // Not used
-    }
-
-    @Override
-    public final List<Proxy> select(final URI uri) {
+    protected final List<Proxy> _select(final URI uri) {
 
         return this.proxyList;
     }

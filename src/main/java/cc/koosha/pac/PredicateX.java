@@ -1,8 +1,10 @@
-package cc.koosha.pac.func;
+package cc.koosha.pac;
 
 
 /**
  * Similar to java 8's java.util.Predicate
+ *
+ * @author Koosha Hosseiny, Copyright 2017
  */
 public interface PredicateX<T> {
 

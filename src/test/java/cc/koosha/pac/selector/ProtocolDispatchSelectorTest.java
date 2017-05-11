@@ -10,7 +10,6 @@ import java.net.*;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertSame;
 
 
@@ -29,9 +28,14 @@ public class ProtocolDispatchSelectorTest {
 
     private ProtocolDispatchSelector ps;
 
+    private static ProtocolDispatchSelector getPs(final ProxySelector fallback) {
+
+        return new ProtocolDispatchSelector(fallback);
+    }
+
     private static ProtocolDispatchSelector getPs() {
 
-        return new ProtocolDispatchSelector(new ProxySelector() {
+        return getPs(new ProxySelector() {
             @Override
             public List<Proxy> select(final URI uri) {
                 return null;
@@ -93,9 +97,7 @@ public class ProtocolDispatchSelectorTest {
     @Test
     public void testFallback() {
 
-        final ProtocolDispatchSelector px       = getPs();
-        final FixedProxySelector       selector = new FixedProxySelector(HTTP_TEST_PROXY);
-        px.setFallbackSelector(selector);
+        final ProtocolDispatchSelector px = getPs(new FixedProxySelector(HTTP_TEST_PROXY));
 
         assertEquals(px.select(HTTP_TEST_URI).get(0), HTTP_TEST_PROXY);
     }

@@ -1,7 +1,7 @@
 package cc.koosha.pac.pac;
 
 import cc.koosha.pac.ProxyEvaluationException;
-import cc.koosha.pac.func.StringProvider;
+import cc.koosha.pac.StringProvider;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Proxy_auto-config">Wikipedia: PAC</a>
  *
+ * @author Koosha Hosseiny, Copyright 2017
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
@@ -24,7 +25,7 @@ public final class JavaxPacScriptParser implements PacScriptParser {
     static final String SCRIPT_METHODS_OBJECT = "__pacutil";
 
     private final StringProvider scriptSource;
-    private final ScriptEngine engine;
+    private final ScriptEngine   engine;
 
     public JavaxPacScriptParser(final StringProvider scriptSource) throws ProxyEvaluationException {
 
@@ -45,8 +46,8 @@ public final class JavaxPacScriptParser implements PacScriptParser {
         engine.put(SCRIPT_METHODS_OBJECT, new DefaultPacScriptMethods(netRequest));
 
         for (final Method method : ScriptMethods.class.getMethods()) {
-            final String name = method.getName();
-            final int args = method.getParameterTypes().length;
+            final String        name   = method.getName();
+            final int           args   = method.getParameterTypes().length;
             final StringBuilder toEval = new StringBuilder(name).append(" = function(");
 
             for (int i = 0; i < args; i++) {
@@ -99,6 +100,7 @@ public final class JavaxPacScriptParser implements PacScriptParser {
         }
     }
 
+    @SuppressWarnings("unused")
     public static boolean isScriptValid(final String script) {
 
         return script != null &&

@@ -8,6 +8,7 @@ import java.net.Proxy;
  * returned for all URIs passed to the select method. This implementation can be
  * used for SOCKS 4 and 5 proxy support.
  *
+ * @author Koosha Hosseiny, Copyright 2017
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */

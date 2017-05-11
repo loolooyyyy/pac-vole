@@ -1,9 +1,6 @@
 package cc.koosha.pac.filter;
 
-import cc.koosha.pac.filter.HostnameFilter;
-import cc.koosha.pac.filter.IpRangeFilter;
-import cc.koosha.pac.func.FunctionX;
-import cc.koosha.pac.func.PredicateX;
+import cc.koosha.pac.PredicateX;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -15,47 +12,62 @@ import static cc.koosha.pac.filter.HostnameFilter.Mode.ENDS_WITH;
 
 
 /**
- * Default implementation for an list parser. This will support the most
- * common forms of filters found in lists. The list is a comma (or space)
- * separated list of domain names or IP addresses. The following section shows
- * some examples.
+ * Will support the most common forms of filters found in lists. The list is a
+ * comma (or space) separated list of domain names or IP addresses. The
+ * following section shows some examples:
  * <p>
- * .mynet.com - Filters all host names ending with .mynet.com *.mynet.com -
- * Filters all host names ending with .mynet.com www.mynet.* - Filters all host
- * names starting with www.mynet. 123.12.32.1 - Filters the IP 123.12.32.1
- * 123.12.32.1/255 - Filters the IP range http://www.mynet.com - Filters only
- * HTTP protocol not FTP and no HTTPS
+ * <ul>
+ *     <li>
+ *         <b>{@code .mynet.com}</b> filters all host names ending with
+ *         <em>.mynet.com</em>.
+ *     </li>
+ *     <li>
+ *         <b>{@code *.mynet.com}</b> filters all host names ending with
+ *         <em>.mynet.com</em>.
+ *     </li>
+ *     <li>
+ *         <b>{@code www.mynet.*}</b> filters all host names starting with
+ *         <em>www.mynet.</em>.
+ *     </li>
+ *     <li>
+ *         <b>{@code 123.12.32.1}</b> filters the IP <em>123.12.32.1</em>.
+ *     </li>
+ *     <li>
+ *         <b>{@code 123.12.32.1/255}</b> filters the IP range.
+ *     </li>
+ *     <li>
+ *         <b>{@code http://www.mynet.com}</b> Filters only HTTP protocol not
+ *         FTP and no HTTPS.
+ *     </li>
+ * </ul>
  * <p>
  * Example of a list:
  * <p>
- * .mynet.com, *.my-other-net.org, 123.55.23.222, 123.55.23.0/24
+ * {@code .mynet.com, *.my-other-net.org, 123.55.23.222, 123.55.23.0/24}
  * <p>
- * Some info about this topic can be found here:
- * http://kb.mozillazine.org/No_proxy_for
- * http://technet.microsoft.com/en-us/library/dd361953.aspx
- * <p>
+ * Some info about this topic can be found on
+ * <a href="http://kb.mozillazine.org/No_proxy_for">Mozillazine: No proxy for</a>
+ * and
+ * <a href="http://technet.microsoft.com/en-us/library/dd361953.aspx">Microsot</a>.
+ *
+ * <pr>
  * Note that this implementation does not cover all variations of all browsers
  * but should cover the most used formats.
  *
+ * @author Koosha Hosseiny, Copyright 2017
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public final class DefaultFilterListParser implements FunctionX<String, List<PredicateX<URI>>> {
+@SuppressWarnings("SpellCheckingInspection")
+public final class FilterListParser {
 
     private static final Pattern IP_SUB_PATTERN = Pattern.compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
             + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
             + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])/(\\d|([12]\\d|3[0-2]))$");
 
-
-    @Override
-    public List<PredicateX<URI>> apply(final String list) {
-
-        return parse(list);
-    }
-
     public static List<PredicateX<URI>> parse(final String list) {
 
-        final String[] token = list.split("[, ]+");
+        final String[]              token  = list.split("[, ]+");
         final List<PredicateX<URI>> result = new ArrayList<>(token.length);
 
         for (final String each : token) {

@@ -6,6 +6,7 @@ import cc.koosha.pac.ProxyEvaluationException;
 /**
  * Common interface for PAC script parsers.
  *
+ * @author Koosha Hosseiny, Copyright 2017
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
@@ -22,6 +23,5 @@ public interface PacScriptParser {
      * @throws ProxyEvaluationException on execution error.
      */
     String evaluate(String url, String host) throws ProxyEvaluationException;
-
 
 }

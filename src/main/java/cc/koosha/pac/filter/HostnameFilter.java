@@ -1,6 +1,6 @@
 package cc.koosha.pac.filter;
 
-import cc.koosha.pac.func.PredicateX;
+import cc.koosha.pac.PredicateX;
 
 import java.net.URI;
 
@@ -8,6 +8,7 @@ import java.net.URI;
 /**
  * Tests if a host name of a given URI matches some criteria.
  *
+ * @author Koosha Hosseiny, Copyright 2017
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
@@ -19,11 +20,12 @@ public final class HostnameFilter implements PredicateX<URI> {
         REGEX
     }
 
+
     private static final String PROTOCOL_ENDING = "://";
 
     private final String matchTo;
     private final String protocolFilter;
-    private final Mode mode;
+    private final Mode   mode;
 
     public HostnameFilter(final Mode mode, final String matchTo) {
 
@@ -56,7 +58,7 @@ public final class HostnameFilter implements PredicateX<URI> {
         String host = uri.getAuthority();
 
         // Strip away port take special care for IP6.
-        final int index = host.indexOf(':');
+        final int index  = host.indexOf(':');
         final int index2 = host.lastIndexOf(']');
         if (index != -1 && index2 < index)
             host = host.substring(0, index);

@@ -14,23 +14,22 @@ import java.util.Map;
  * This is a facade for a list of ProxySelector objects. Different
  * ProxySelectors per protocol can be registered.
  *
+ * @author Koosha Hosseiny, Copyright 2017
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public final class ProtocolDispatchSelector extends AbstractProxySelector {
+public final class ProtocolDispatchSelector extends DelegatingProxySelector {
 
     private final Map<String, ProxySelector> selectors = new HashMap<>();
-
-    private ProxySelector fallbackSelector = new NoProxySelector();
 
     private ProxySelector _get(final String protocol) {
 
         if (protocol == null)
-            return this.fallbackSelector;
+            return this.getDelegate();
 
         synchronized (this.selectors) {
             final ProxySelector selector = this.selectors.get(protocol);
-            return selector == null ? this.fallbackSelector : selector;
+            return selector == null ? this.getDelegate() : selector;
         }
     }
 
@@ -41,22 +40,22 @@ public final class ProtocolDispatchSelector extends AbstractProxySelector {
         }
     }
 
-    private void _add(final String protocol,
-                      final ProxySelector selector) {
+    private void _add(final String protocol, final ProxySelector selector) {
 
         synchronized (this.selectors) {
             this.selectors.put(protocol, selector);
         }
     }
 
-    public ProtocolDispatchSelector(final ProxySelector fallbackSelector) {
+    public ProtocolDispatchSelector() {
 
-        if(fallbackSelector == null)
-            throw new NullPointerException("fallbackSelector");
-
-        this.fallbackSelector = fallbackSelector;
+        this(NoProxySelector.getDefault());
     }
 
+    public ProtocolDispatchSelector(final ProxySelector fallbackSelector) {
+
+        super(fallbackSelector);
+    }
 
     /**
      * Sets a selector responsible for the given protocol.
@@ -82,23 +81,10 @@ public final class ProtocolDispatchSelector extends AbstractProxySelector {
      *
      * @return the old selector that is removed.
      */
+    @SuppressWarnings("SameParameterValue")
     public ProxySelector removeSelectorForProtocol(final String protocol) {
 
         return this._remove(protocol);
-    }
-
-    /**
-     * Sets the fallback selector that is always called when no matching
-     * protocol selector was found..
-     *
-     * @param selector the selector to use.
-     */
-    public void setFallbackSelector(final ProxySelector selector) {
-
-        if (selector == null)
-            throw new NullPointerException("selector");
-
-        this.fallbackSelector = selector;
     }
 
     // ________________________________________________________________________
@@ -112,7 +98,7 @@ public final class ProtocolDispatchSelector extends AbstractProxySelector {
     }
 
     @Override
-    public List<Proxy> select(final URI uri) {
+    protected List<Proxy> __select(final URI uri) {
 
         return _get(uri.getScheme()).select(uri);
     }

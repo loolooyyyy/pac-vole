@@ -1,6 +1,5 @@
 package cc.koosha.pac.filter;
 
-import cc.koosha.pac.filter.HostnameFilter;
 import cc.koosha.pac.filter.HostnameFilter.Mode;
 import org.testng.annotations.Test;
 

@@ -1,7 +1,7 @@
 package cc.koosha.pac.pac;
 
 import cc.koosha.pac.ProxyEvaluationException;
-import cc.koosha.pac.func.StringProvider;
+import cc.koosha.pac.StringProvider;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

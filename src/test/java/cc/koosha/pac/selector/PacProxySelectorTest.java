@@ -1,8 +1,7 @@
 package cc.koosha.pac.selector;
 
-import cc.koosha.pac.pac.NetRequest;
 import cc.koosha.pac.ProxyEvaluationException;
-import cc.koosha.pac.ProxyException;
+import cc.koosha.pac.pac.NetRequest;
 import org.testng.annotations.Test;
 
 import java.net.InetSocketAddress;
@@ -39,7 +38,7 @@ public class PacProxySelectorTest {
     }
 
     @Test
-    public void testScriptExecution2() throws ProxyException, MalformedURLException {
+    public void testScriptExecution2() throws MalformedURLException, ProxyEvaluationException {
 
         final PacProxySelector pacProxySelector = new PacProxySelector(provider("comment"));
         assertEquals(Proxy.NO_PROXY, pacProxySelector.select(HTTP_TEST_URI)

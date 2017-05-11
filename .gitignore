@@ -11,3 +11,6 @@ buildNumber.properties
 # Idea
 proxy-vole.iml
 .idea
+
+build/
+.gradle/

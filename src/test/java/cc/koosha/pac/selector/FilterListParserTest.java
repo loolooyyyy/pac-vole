@@ -1,8 +1,8 @@
 package cc.koosha.pac.selector;
 
 
-import cc.koosha.pac.func.PredicateX;
-import cc.koosha.pac.filter.DefaultFilterListParser;
+import cc.koosha.pac.filter.FilterListParser;
+import cc.koosha.pac.PredicateX;
 import org.testng.annotations.Test;
 
 import java.net.URI;
@@ -11,19 +11,19 @@ import java.util.List;
 import static org.testng.Assert.*;
 
 
-public class DefaultFilterListParserTest {
+public class FilterListParserTest {
 
     private static List<PredicateX<URI>> parse(final String whitelist) {
 
-        return DefaultFilterListParser.parse(whitelist);
+        return FilterListParser.parse(whitelist);
     }
 
     @Test
     public void shouldAllowAllPrefix() {
 
         final String whitelist = "*.mynet.com";
-        final String u0 = "http://rossi.mynet.com";
-        final String u1 = "http://rossi.mynet.com.test";
+        final String u0        = "http://rossi.mynet.com";
+        final String u1        = "http://rossi.mynet.com.test";
 
         final PredicateX<URI> filter = parse(whitelist).get(0);
 

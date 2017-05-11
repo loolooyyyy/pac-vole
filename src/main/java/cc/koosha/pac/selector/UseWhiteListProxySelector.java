@@ -1,12 +1,10 @@
 package cc.koosha.pac.selector;
 
-import cc.koosha.pac.filter.DefaultFilterListParser;
-import cc.koosha.pac.func.PredicateX;
+import cc.koosha.pac.PredicateX;
+import cc.koosha.pac.filter.FilterListParser;
 
-import java.io.IOException;
 import java.net.Proxy;
 import java.net.ProxySelector;
-import java.net.SocketAddress;
 import java.net.URI;
 import java.util.List;
 
@@ -17,44 +15,36 @@ import java.util.List;
  * and if it matches it will use a proxy as provided by the delegate
  * ProxySelector else it will return DIRECT.
  *
+ * @author Koosha Hosseiny, Copyright 2017
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
-public final class UseWhiteListProxySelector extends AbstractProxySelector {
+public final class UseWhiteListProxySelector extends DelegatingProxySelector {
 
-    private final ProxySelector         delegate;
     private final List<PredicateX<URI>> filters;
 
     /**
      * @param whiteList     the whitelist to use.
      * @param proxySelector the proxy selector to use.
      */
-    public UseWhiteListProxySelector(final String whiteList,
-                                     final ProxySelector proxySelector) {
+    public UseWhiteListProxySelector(final ProxySelector proxySelector,
+                                     final String whiteList) {
+
+        super(proxySelector);
+
         if (whiteList == null)
             throw new NullPointerException("whitelist");
-        if (proxySelector == null)
-            throw new NullPointerException("proxySelector");
 
-        this.delegate = proxySelector;
-        this.filters = DefaultFilterListParser.parse(whiteList);
+        this.filters = FilterListParser.parse(whiteList);
     }
 
     @Override
-    public void connectFailed(final URI uri,
-                              final SocketAddress sa,
-                              final IOException ioe) {
-
-        this.delegate.connectFailed(uri, sa, ioe);
-    }
-
-    @Override
-    public List<Proxy> select(final URI uri) {
+    protected List<Proxy> __select(final URI uri) {
 
         // If in white list, use proxy selector.
         for (final PredicateX<URI> filter : this.filters)
             if (filter.test(uri))
-                return this.delegate.select(uri);
+                return null;
 
         return noProxyList();
     }

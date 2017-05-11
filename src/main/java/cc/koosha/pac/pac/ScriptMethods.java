@@ -4,15 +4,17 @@ package cc.koosha.pac.pac;
 /**
  * Defines the public interface for PAC scripts.
  *
+ * @author Koosha Hosseiny, Copyright 2017
  * @author Markus Bernhardt, Copyright 2016
  * @author Bernd Rosstauscher, Copyright 2009
  */
+@SuppressWarnings({"SameParameterValue", "unused"})
 public interface ScriptMethods {
 
     boolean isPlainHostName(String host);
 
     /**
-     * Tests if an URL is in a given domain.
+     * Tests if a URL is in a given domain.
      *
      * @param host   is the host name from the URL.
      * @param domain is the domain name to test the host name against.
@@ -128,16 +130,15 @@ public interface ScriptMethods {
     int dnsDomainLevels(String host);
 
     /**
-     * Returns true if the string matches the specified shell expression.
-     * Actually, currently the patterns are shell expressions, not regular
-     * expressions.
+     * Returns true if the string matches the specified pattern.
      *
-     * @param str   is any string to compare (e.g. the URL, or the host name).
-     * @param shexp is a shell expression to compare against.
+     * @param str     is any string to compare (e.g. the URL, or the host
+     *                name).
+     * @param pattern is a shell expression to compare against.
      *
      * @return true if the string matches, else false.
      */
-    boolean shExpMatch(String str, String shexp);
+    boolean shExpMatch(String str, String pattern);
 
     /**
      * Only the first parameter is mandatory. Either the second, the third, or
@@ -237,5 +238,16 @@ public interface ScriptMethods {
     String getClientVersion();
 
 
+    // ---------------------------------------------
+
+    /**
+     * <b>Attention</b>: THIS IS NOT A STANDARD METHOD.
+     *
+     * checks if the given host is a plain ip address.
+     *
+     * @param host to check.
+     * @return true if the given host is a plain IpV4 address.
+     */
+    boolean isIpAddress(final String host);
 
 }
