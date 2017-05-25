@@ -1,6 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'distribution'
+apply plugin: 'maven-publish'
 
 group 'cc.koosha.pac'
 version '0.0.1'
@@ -32,3 +33,30 @@ dependencies {
     testCompile 'org.mockito:mockito-core:2.7.22'
     //testCompile 'org.junit.jupiter:junit-jupiter-api:RELEASE'
 }
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar {
+                classifier "sources"
+            }
+        }
+    }
+}
+
