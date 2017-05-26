@@ -117,6 +117,8 @@ public class JavaxPacScriptParserTest {
     @Test
     public void testScriptExecution() throws ProxyEvaluationException {
 
+        // TODO : assertions
+
         new JavaxPacScriptParser(provider("exec"))
                 .evaluate(HTTP_TEST_URI.toString(), "host1.unit-test.invalid");
     }
@@ -124,17 +126,16 @@ public class JavaxPacScriptParserTest {
     @Test
     public void testCommentsInScript() throws ProxyEvaluationException {
 
+        // TODO : assertions
+
         new JavaxPacScriptParser(provider("comment"))
                 .evaluate(HTTP_TEST_URI.toString(), "host1.unit-test.invalid");
     }
 
-    /**
-     * Test deactivated because it will not run in Java 1.5 and time based test
-     * are unstable
-     */
     @Test
-    // @Ignore
     public void testScriptWeekDayScript() throws ProxyEvaluationException {
+
+        // TODO : assertions
 
         new JavaxPacScriptParser(provider("weekDay"))
                 .evaluate(HTTP_TEST_URI.toString(), "host1.unit-test.invalid");
@@ -148,17 +149,16 @@ public class JavaxPacScriptParserTest {
     // @Ignore
     public void testDateRangeScript() throws ProxyEvaluationException {
 
+        // TODO : assertions
+
         new JavaxPacScriptParser(provider("dateRange"))
                 .evaluate(HTTP_TEST_URI.toString(), "host1.unit-test.invalid");
     }
 
-    /**
-     * Test deactivated because it will not run in Java 1.5 and time based test
-     * are unstable
-     */
     @Test
-    // @Ignore
     public void testTimeRangeScript() throws ProxyEvaluationException {
+
+        // TODO : assertions
 
         String range = provider("timeRange").get();
         new RuntimeException(range).printStackTrace();

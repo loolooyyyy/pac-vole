@@ -50,7 +50,7 @@ import static cc.koosha.pac.filter.HostnameFilter.Mode.ENDS_WITH;
  * and
  * <a href="http://technet.microsoft.com/en-us/library/dd361953.aspx">Microsot</a>.
  *
- * <pr>
+ * <p>
  * Note that this implementation does not cover all variations of all browsers
  * but should cover the most used formats.
  *
